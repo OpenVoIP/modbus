@@ -165,6 +165,10 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	return
 }
 
+func (mb *rtuSerialTransporter) Received(handler func(data []byte)) {
+
+}
+
 // calculateDelay roughly calculates time needed for the next frame.
 // See MODBUS over Serial Line - Specification and Implementation Guide (page 13).
 func (mb *rtuSerialTransporter) calculateDelay(chars int) time.Duration {

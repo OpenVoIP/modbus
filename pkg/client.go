@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the BSD license. See the LICENSE file for details.
 
-package modbus
+package pkg
 
 import (
 	"encoding/binary"
@@ -440,10 +440,12 @@ func (mb *client) send(request *ProtocolDataUnit) (response *ProtocolDataUnit, e
 	if err != nil {
 		return
 	}
+
 	aduResponse, err := mb.transporter.Send(aduRequest)
 	if err != nil {
 		return
 	}
+
 	if err = mb.packager.Verify(aduRequest, aduResponse); err != nil {
 		return
 	}

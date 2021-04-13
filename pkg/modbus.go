@@ -5,7 +5,7 @@
 /*
 Package modbus provides a client for MODBUS TCP and RTU/ASCII.
 */
-package modbus
+package pkg
 
 import (
 	"fmt"
@@ -90,4 +90,5 @@ type Packager interface {
 // Transporter specifies the transport layer.
 type Transporter interface {
 	Send(aduRequest []byte) (aduResponse []byte, err error)
+	Received(handler func(data []byte))
 }

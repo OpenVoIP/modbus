@@ -201,6 +201,10 @@ func (mb *asciiSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, e
 	return
 }
 
+func (mb *asciiSerialTransporter) Received(handler func(data []byte)) {
+
+}
+
 // writeHex encodes byte to string in hexadecimal, e.g. 0xA5 => "A5"
 // (encoding/hex only supports lowercase string).
 func writeHex(buf *bytes.Buffer, value []byte) (err error) {

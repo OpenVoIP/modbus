@@ -1,4 +1,4 @@
-go modbus [![Build Status](https://travis-ci.org/goburrow/modbus.svg?branch=master)](https://travis-ci.org/goburrow/modbus) [![GoDoc](https://godoc.org/github.com/goburrow/modbus?status.svg)](https://godoc.org/github.com/goburrow/modbus)
+go modbus [![Build Status](https://travis-ci.org/goburrow/modbus.svg?branch=master)](https://travis-ci.org/goburrow/modbus) [![GoDoc](https://godoc.org/github.com/OpenVoIP/modbus?status.svg)](https://godoc.org/github.com/OpenVoIP/modbus)
 =========
 Fault-tolerant, fail-fast implementation of Modbus protocol in Go.
 
@@ -76,3 +76,6 @@ results, err := client.ReadDiscreteInputs(15, 2)
 References
 ----------
 -   [Modbus Specifications and Implementation Guides](http://www.modbus.org/specs.php)
+
+
+* 2021-4-13 init, 更新目录结构.
