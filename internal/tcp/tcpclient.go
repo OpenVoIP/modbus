@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the BSD license. See the LICENSE file for details.
 
-package modbus
+package tcp
 
 import (
 	"encoding/binary"
@@ -15,7 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	modbus "github.com/OpenVoIP/modbus/pkg"
+	modbus "github.com/OpenVoIP/modbus/internal"
 )
 
 const (
@@ -232,11 +232,12 @@ func (mb *tcpTransporter) Received(handler func(data []byte)) {
 		aduResponse := data[:length]
 
 		id := binary.BigEndian.Uint16(aduResponse)
-		mb.logf("modbus: id %d received % x\n", id, aduResponse)
 
+		// id 0 为主动推送
 		if id == 0 {
 			handler(aduResponse)
 		} else {
+			mb.logf("modbus: received % x\n", aduResponse)
 			mb.Data[id] <- aduResponse
 		}
 	}
@@ -246,9 +247,11 @@ func (mb *tcpTransporter) Received(handler func(data []byte)) {
 // Connect and Close are exported so that multiple requests can be done with one session
 func (mb *tcpTransporter) Connect() error {
 	mb.mu.Lock()
-	defer mb.mu.Unlock()
-
 	err := mb.connect()
+	mb.mu.Unlock()
+	if err != nil {
+		mb.Stop <- true
+	}
 
 	<-mb.Stop
 	return err

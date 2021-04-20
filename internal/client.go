@@ -2,11 +2,13 @@
 // This software may be modified and distributed under the terms
 // of the BSD license. See the LICENSE file for details.
 
-package pkg
+package internal
 
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/OpenVoIP/modbus/pkg/utils"
 )
 
 // ClientHandler is the interface that groups the Packager and Transporter methods.
@@ -44,8 +46,8 @@ func (mb *client) ReadCoils(address, quantity uint16) (results []byte, err error
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeReadCoils,
-		Data:         dataBlock(address, quantity),
+		FunctionCode: utils.FuncCodeReadCoils,
+		Data:         utils.DataBlock(address, quantity),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -75,8 +77,8 @@ func (mb *client) ReadDiscreteInputs(address, quantity uint16) (results []byte, 
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeReadDiscreteInputs,
-		Data:         dataBlock(address, quantity),
+		FunctionCode: utils.FuncCodeReadDiscreteInputs,
+		Data:         utils.DataBlock(address, quantity),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -106,8 +108,8 @@ func (mb *client) ReadHoldingRegisters(address, quantity uint16) (results []byte
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeReadHoldingRegisters,
-		Data:         dataBlock(address, quantity),
+		FunctionCode: utils.FuncCodeReadHoldingRegisters,
+		Data:         utils.DataBlock(address, quantity),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -137,8 +139,8 @@ func (mb *client) ReadInputRegisters(address, quantity uint16) (results []byte, 
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeReadInputRegisters,
-		Data:         dataBlock(address, quantity),
+		FunctionCode: utils.FuncCodeReadInputRegisters,
+		Data:         utils.DataBlock(address, quantity),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -169,8 +171,8 @@ func (mb *client) WriteSingleCoil(address, value uint16) (results []byte, err er
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeWriteSingleCoil,
-		Data:         dataBlock(address, value),
+		FunctionCode: utils.FuncCodeWriteSingleCoil,
+		Data:         utils.DataBlock(address, value),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -205,8 +207,8 @@ func (mb *client) WriteSingleCoil(address, value uint16) (results []byte, err er
 //  Register value        : 2 bytes
 func (mb *client) WriteSingleRegister(address, value uint16) (results []byte, err error) {
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeWriteSingleRegister,
-		Data:         dataBlock(address, value),
+		FunctionCode: utils.FuncCodeWriteSingleRegister,
+		Data:         utils.DataBlock(address, value),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -247,8 +249,8 @@ func (mb *client) WriteMultipleCoils(address, quantity uint16, value []byte) (re
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeWriteMultipleCoils,
-		Data:         dataBlockSuffix(value, address, quantity),
+		FunctionCode: utils.FuncCodeWriteMultipleCoils,
+		Data:         utils.DataBlockSuffix(value, address, quantity),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -289,8 +291,8 @@ func (mb *client) WriteMultipleRegisters(address, quantity uint16, value []byte)
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeWriteMultipleRegisters,
-		Data:         dataBlockSuffix(value, address, quantity),
+		FunctionCode: utils.FuncCodeWriteMultipleRegisters,
+		Data:         utils.DataBlockSuffix(value, address, quantity),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -327,8 +329,8 @@ func (mb *client) WriteMultipleRegisters(address, quantity uint16, value []byte)
 //  OR-mask               : 2 bytes
 func (mb *client) MaskWriteRegister(address, andMask, orMask uint16) (results []byte, err error) {
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeMaskWriteRegister,
-		Data:         dataBlock(address, andMask, orMask),
+		FunctionCode: utils.FuncCodeMaskWriteRegister,
+		Data:         utils.DataBlock(address, andMask, orMask),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -380,8 +382,8 @@ func (mb *client) ReadWriteMultipleRegisters(readAddress, readQuantity, writeAdd
 		return
 	}
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeReadWriteMultipleRegisters,
-		Data:         dataBlockSuffix(value, readAddress, readQuantity, writeAddress, writeQuantity),
+		FunctionCode: utils.FuncCodeReadWriteMultipleRegisters,
+		Data:         utils.DataBlockSuffix(value, readAddress, readQuantity, writeAddress, writeQuantity),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -407,8 +409,8 @@ func (mb *client) ReadWriteMultipleRegisters(readAddress, readQuantity, writeAdd
 //  FIFO value register   : Nx2 bytes
 func (mb *client) ReadFIFOQueue(address uint16) (results []byte, err error) {
 	request := ProtocolDataUnit{
-		FunctionCode: FuncCodeReadFIFOQueue,
-		Data:         dataBlock(address),
+		FunctionCode: utils.FuncCodeReadFIFOQueue,
+		Data:         utils.DataBlock(address),
 	}
 	response, err := mb.send(&request)
 	if err != nil {
@@ -464,33 +466,4 @@ func (mb *client) send(request *ProtocolDataUnit) (response *ProtocolDataUnit, e
 		return
 	}
 	return
-}
-
-// dataBlock creates a sequence of uint16 data.
-func dataBlock(value ...uint16) []byte {
-	data := make([]byte, 2*len(value))
-	for i, v := range value {
-		binary.BigEndian.PutUint16(data[i*2:], v)
-	}
-	return data
-}
-
-// dataBlockSuffix creates a sequence of uint16 data and append the suffix plus its length.
-func dataBlockSuffix(suffix []byte, value ...uint16) []byte {
-	length := 2 * len(value)
-	data := make([]byte, length+1+len(suffix))
-	for i, v := range value {
-		binary.BigEndian.PutUint16(data[i*2:], v)
-	}
-	data[length] = uint8(len(suffix))
-	copy(data[length+1:], suffix)
-	return data
-}
-
-func responseError(response *ProtocolDataUnit) error {
-	mbError := &ModbusError{FunctionCode: response.FunctionCode}
-	if response.Data != nil && len(response.Data) > 0 {
-		mbError.ExceptionCode = response.Data[0]
-	}
-	return mbError
 }

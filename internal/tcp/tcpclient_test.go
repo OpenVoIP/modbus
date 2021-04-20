@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the BSD license. See the LICENSE file for details.
 
-package modbus
+package tcp
 
 import (
 	"bytes"
@@ -10,11 +10,13 @@ import (
 	"net"
 	"testing"
 	"time"
+
+	modbus "github.com/OpenVoIP/modbus/internal"
 )
 
 func TestTCPEncoding(t *testing.T) {
 	packager := tcpPackager{}
-	pdu := ProtocolDataUnit{}
+	pdu := modbus.ProtocolDataUnit{}
 	pdu.FunctionCode = 3
 	pdu.Data = []byte{0, 4, 0, 3}
 
@@ -92,7 +94,7 @@ func BenchmarkTCPEncoder(b *testing.B) {
 	encoder := tcpPackager{
 		SlaveId: 10,
 	}
-	pdu := ProtocolDataUnit{
+	pdu := modbus.ProtocolDataUnit{
 		FunctionCode: 1,
 		Data:         []byte{2, 3, 4, 5, 6, 7, 8, 9},
 	}

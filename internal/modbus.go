@@ -2,7 +2,31 @@
 // This software may be modified and distributed under the terms
 // of the BSD license. See the LICENSE file for details.
 
-package pkg
+/*
+Package modbus provides a client for MODBUS TCP and RTU/ASCII.
+*/
+package internal
+
+import "github.com/OpenVoIP/modbus/pkg/utils"
+
+// ProtocolDataUnit (PDU) is independent of underlying communication layers.
+type ProtocolDataUnit struct {
+	FunctionCode byte
+	Data         []byte
+}
+
+// Packager specifies the communication layer.
+type Packager interface {
+	Encode(pdu *ProtocolDataUnit) (adu []byte, err error)
+	Decode(adu []byte) (pdu *ProtocolDataUnit, err error)
+	Verify(aduRequest []byte, aduResponse []byte) (err error)
+}
+
+// Transporter specifies the transport layer.
+type Transporter interface {
+	Send(aduRequest []byte) (aduResponse []byte, err error)
+	Received(handler func(data []byte))
+}
 
 type Client interface {
 	// Bit access
@@ -46,4 +70,12 @@ type Client interface {
 	//ReadFIFOQueue reads the contents of a First-In-First-Out (FIFO) queue
 	// of register in a remote device and returns FIFO value register.
 	ReadFIFOQueue(address uint16) (results []byte, err error)
+}
+
+func responseError(response *ProtocolDataUnit) error {
+	mbError := &utils.ModbusError{FunctionCode: response.FunctionCode}
+	if response.Data != nil && len(response.Data) > 0 {
+		mbError.ExceptionCode = response.Data[0]
+	}
+	return mbError
 }

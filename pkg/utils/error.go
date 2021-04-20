@@ -1,15 +1,6 @@
-// Copyright 2014 Quoc-Viet Nguyen. All rights reserved.
-// This software may be modified and distributed under the terms
-// of the BSD license. See the LICENSE file for details.
+package utils
 
-/*
-Package modbus provides a client for MODBUS TCP and RTU/ASCII.
-*/
-package pkg
-
-import (
-	"fmt"
-)
+import "fmt"
 
 const (
 	// Bit access
@@ -72,23 +63,4 @@ func (e *ModbusError) Error() string {
 		name = "unknown"
 	}
 	return fmt.Sprintf("modbus: exception '%v' (%s), function '%v'", e.ExceptionCode, name, e.FunctionCode)
-}
-
-// ProtocolDataUnit (PDU) is independent of underlying communication layers.
-type ProtocolDataUnit struct {
-	FunctionCode byte
-	Data         []byte
-}
-
-// Packager specifies the communication layer.
-type Packager interface {
-	Encode(pdu *ProtocolDataUnit) (adu []byte, err error)
-	Decode(adu []byte) (pdu *ProtocolDataUnit, err error)
-	Verify(aduRequest []byte, aduResponse []byte) (err error)
-}
-
-// Transporter specifies the transport layer.
-type Transporter interface {
-	Send(aduRequest []byte) (aduResponse []byte, err error)
-	Received(handler func(data []byte))
 }

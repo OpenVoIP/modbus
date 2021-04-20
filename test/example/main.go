@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
+	modbus "github.com/OpenVoIP/modbus/internal"
 	modbusTCP "github.com/OpenVoIP/modbus/internal/tcp"
-	modbus "github.com/OpenVoIP/modbus/pkg"
 	"github.com/OpenVoIP/modbus/pkg/utils"
 )
 
@@ -29,7 +29,6 @@ func main() {
 		err := handler.Connect()
 		if err != nil {
 			logger.Printf("Connect have error %+v\n", err)
-			// handler.Close()
 		}
 
 		time.Sleep(3 * time.Second)
