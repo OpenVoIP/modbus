@@ -24,6 +24,7 @@ const (
 	// Modbus Application Protocol
 	tcpHeaderSize = 7
 	tcpMaxLength  = 260
+
 	// Default TCP timeout is not set
 	tcpTimeout     = 10 * time.Second
 	tcpIdleTimeout = 60 * time.Second
@@ -42,6 +43,7 @@ func NewTCPClientHandler(address string) *TCPClientHandler {
 	h.Address = address
 	h.Timeout = tcpTimeout
 	h.IdleTimeout = tcpIdleTimeout
+	h.Stop = make(chan bool)
 	return h
 }
 
@@ -156,8 +158,10 @@ type tcpTransporter struct {
 
 	// 将每次发出 Id 作 key, 接受响应为 value
 	Data map[uint16](chan []byte)
+
 	// 标记连接断开
-	Stop chan bool
+	Stop  chan bool
+	Error error
 }
 
 // Send sends data to server and ensures response length is greater than header length.
@@ -165,13 +169,10 @@ func (mb *tcpTransporter) Send(aduRequest []byte) (aduResponse []byte, err error
 	mb.mu.Lock()
 	defer mb.mu.Unlock()
 
-	// Establish a new connection if not connected
-	if err = mb.connect(); err != nil {
-		return
-	}
 	// Set timer to close when idle
 	mb.lastActivity = time.Now()
 	mb.startCloseTimer()
+
 	// Set write and read timeout
 	var timeout time.Time
 	if mb.Timeout > 0 {
@@ -209,7 +210,8 @@ func (mb *tcpTransporter) Received(handler func(data []byte)) {
 	for {
 		if _, err = io.ReadFull(mb.conn, data[:tcpHeaderSize]); err != nil {
 			mb.logf("read header error %+v", err)
-			mb.Stop <- true
+			mb.Error = err
+			mb.close()
 			break
 		}
 		// Read length, ignore transaction & protocol id (4 bytes)
@@ -246,29 +248,23 @@ func (mb *tcpTransporter) Received(handler func(data []byte)) {
 // Connect establishes a new connection to the address in Address.
 // Connect and Close are exported so that multiple requests can be done with one session
 func (mb *tcpTransporter) Connect() error {
-	mb.mu.Lock()
-	err := mb.connect()
-	mb.mu.Unlock()
-	if err != nil {
-		mb.Stop <- true
-	}
-
+	go mb.connect()
 	<-mb.Stop
-	return err
+	return mb.Error
 }
 
-func (mb *tcpTransporter) connect() error {
+func (mb *tcpTransporter) connect() {
 	if mb.conn == nil {
 		dialer := net.Dialer{Timeout: mb.Timeout}
 		conn, err := dialer.Dial("tcp", mb.Address)
 		if err != nil {
-			mb.Stop <- true
-			return err
+			mb.Error = err
+			mb.close()
+			return
 		}
 		mb.conn = conn
 	}
-	go mb.Received(mb.Handle)
-	return nil
+	mb.Received(mb.Handle)
 }
 
 func (mb *tcpTransporter) startCloseTimer() {
@@ -286,7 +282,6 @@ func (mb *tcpTransporter) startCloseTimer() {
 func (mb *tcpTransporter) Close() error {
 	mb.mu.Lock()
 	defer mb.mu.Unlock()
-
 	return mb.close()
 }
 
@@ -318,6 +313,7 @@ func (mb *tcpTransporter) close() (err error) {
 		err = mb.conn.Close()
 		mb.conn = nil
 	}
+	mb.Stop <- true
 	return
 }
 
@@ -329,7 +325,7 @@ func (mb *tcpTransporter) closeIdle() {
 	if mb.IdleTimeout <= 0 {
 		return
 	}
-	idle := time.Now().Sub(mb.lastActivity)
+	idle := time.Since(mb.lastActivity)
 	if idle >= mb.IdleTimeout {
 		mb.logf("modbus: closing connection due to idle timeout: %v", idle)
 		mb.close()
