@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	modbus "github.com/OpenVoIP/modbus/internal"
+	modbus "github.com/OpenVoIP/modbus/pkg"
 )
 
 func TestTCPEncoding(t *testing.T) {

@@ -15,7 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	modbus "github.com/OpenVoIP/modbus/internal"
+	modbus "github.com/OpenVoIP/modbus/pkg"
 )
 
 const (

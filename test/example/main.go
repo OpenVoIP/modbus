@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	modbus "github.com/OpenVoIP/modbus/internal"
-	modbusTCP "github.com/OpenVoIP/modbus/internal/tcp"
+	modbus "github.com/OpenVoIP/modbus/pkg"
+	modbusTCP "github.com/OpenVoIP/modbus/pkg/tcp"
 	"github.com/OpenVoIP/modbus/pkg/utils"
 )
 

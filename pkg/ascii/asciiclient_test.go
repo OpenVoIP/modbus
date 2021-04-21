@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	modbus "github.com/OpenVoIP/modbus/internal/ascii"
+	modbus "github.com/OpenVoIP/modbus/pkg/ascii"
 )
 
 const (

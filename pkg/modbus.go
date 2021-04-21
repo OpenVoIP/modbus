@@ -5,7 +5,7 @@
 /*
 Package modbus provides a client for MODBUS TCP and RTU/ASCII.
 */
-package internal
+package pkg
 
 import "github.com/OpenVoIP/modbus/pkg/utils"
 
